@@ -5,10 +5,10 @@ import { ArcticleParamsFormType } from './types';
 import styles from './ArticleParamsForm.module.scss';
 import clsx from 'clsx';
 
-export const ArticleParamsForm = ({isOpen}: ArcticleParamsFormType = {isOpen:false}) => {
+export const ArticleParamsForm = ({isOpen, toggleIsOpen, clickOutside}: ArcticleParamsFormType) => {
 	return (
-		<>
-			<ArrowButton isOpen={isOpen} onClick={() => {}} />
+		<div onClick={clickOutside}>
+			<ArrowButton isOpen={isOpen} onClick={toggleIsOpen} />
 			<aside className={clsx([styles.container, isOpen && styles.containerOpen])}>
 				<form className={styles.form}>
 					<div className={styles.bottomContainer}>
@@ -17,6 +17,6 @@ export const ArticleParamsForm = ({isOpen}: ArcticleParamsFormType = {isOpen:fal
 					</div>
 				</form>
 			</aside>
-		</>
+		</div>
 	);
 };

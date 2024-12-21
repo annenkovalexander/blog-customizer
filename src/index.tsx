@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { StrictMode, CSSProperties } from 'react';
+import { StrictMode, CSSProperties, useState, useEffect, useRef, MouseEventHandler, SyntheticEvent } from 'react';
 import clsx from 'clsx';
 
 import { Article } from './components/article/Article';
@@ -13,6 +13,15 @@ const domNode = document.getElementById('root') as HTMLDivElement;
 const root = createRoot(domNode);
 
 const App = () => {
+	const [isOpen, setIsOpen] = useState(false);
+	const toggleIsOpen = () => {
+		setIsOpen(!isOpen);
+	}
+	const articleFormRef = useRef(null);
+	const clickOutside = (event: SyntheticEvent) => {
+		console.log("event", event.target);
+	}
+
 	return (
 		<main
 			className={clsx(styles.main)}
@@ -25,7 +34,7 @@ const App = () => {
 					'--bg-color': defaultArticleState.backgroundColor.value,
 				} as CSSProperties
 			}>
-			<ArticleParamsForm isOpen={false}/>
+			<ArticleParamsForm isOpen={isOpen} toggleIsOpen={toggleIsOpen} clickOutside={clickOutside}/>
 			<Article />
 		</main>
 	);
