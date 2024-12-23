@@ -1,18 +1,176 @@
 import { ArrowButton } from 'src/ui/arrow-button';
 import { Button } from 'src/ui/button';
-import { ArcticleParamsFormType } from './types';
+import { Text } from 'src/ui/text/Text';
 
 import styles from './ArticleParamsForm.module.scss';
 import clsx from 'clsx';
+import { MouseEvent, RefObject, useEffect, useRef, useState } from 'react';
+import { ArcticleParamsFormType } from './types';
+import { RadioGroup } from 'src/ui/radio-group';
+import * as options from 'src/constants/articleProps';
+import { Select } from 'src/ui/select';
+import { Separator } from 'src/ui/separator';
 
-export const ArticleParamsForm = ({isOpen, toggleIsOpen, clickOutside}: ArcticleParamsFormType) => {
+export const ArticleParamsForm = ({
+	initialState,
+	submitHandler,
+	resetHandler,
+}: ArcticleParamsFormType) => {
+	const [isOpen, setIsOpen] = useState(false);
+	const [isDropDownOpen, setIsDropdownOpen] = useState(false);
+	const [fontSizeOptionsIndex, setFontSizeOptionsIndex] = useState(
+		initialState.fontSizeOptionsIndex
+	);
+	const [fontFamilyOptionsIndex, setFontFamilyOptionsIndex] = useState(
+		initialState.fontFamilyOptionsIndex
+	);
+	const [fontColorOptionsIndex, setFontColorOptionsIndex] = useState(
+		initialState.fontColorOptionsIndex
+	);
+	const [backgroundColorOptionsIndex, setBackgroundColorOptionsIndex] =
+		useState(initialState.backgroundColorOptionsIndex);
+	const [contentWidthOptionsIndex, setContentWidthOptionsIndex] = useState(
+		initialState.contentWidthOptionsIndex
+	);
+	const handleFontSizeOptionsIndexChange = (value: options.OptionType) => {
+		const index = options.fontSizeOptions.findIndex(
+			(item: options.OptionType) => {
+				return item.title === value.title;
+			}
+		);
+		setFontSizeOptionsIndex(index);
+		setIsDropdownOpen(true);
+	};
+	const handleFontFamilyOptionsChange = (selected: options.OptionType) => {
+		const index = options.fontFamilyOptions.findIndex(
+			(item: options.OptionType) => {
+				return item.title === selected.title;
+			}
+		);
+		setFontFamilyOptionsIndex(index);
+		setIsDropdownOpen(true);
+	};
+	const handFontColorOptionsIndexChange = (selected: options.OptionType) => {
+		const index = options.fontColors.findIndex((item: options.OptionType) => {
+			return item.title === selected.title;
+		});
+		setFontColorOptionsIndex(index);
+		setIsDropdownOpen(true);
+	};
+	const handleBackgroundColorOptionsChange = (selected: options.OptionType) => {
+		const index = options.backgroundColors.findIndex(
+			(item: options.OptionType) => {
+				return item.title === selected.title;
+			}
+		);
+		setBackgroundColorOptionsIndex(index);
+		setIsDropdownOpen(true);
+	};
+	const handleContentWidthOptionsIndex = (selected: options.OptionType) => {
+		const index = options.contentWidthArr.findIndex(
+			(item: options.OptionType) => {
+				return item.title === selected.title;
+			}
+		);
+		setContentWidthOptionsIndex(index);
+		setIsDropdownOpen(true);
+	};
+	const toggleIsOpen = () => {
+		setIsOpen(!isOpen);
+	};
+	const resentIndexesHandler = () => {
+		setFontSizeOptionsIndex(0);
+		setFontFamilyOptionsIndex(0);
+		setFontColorOptionsIndex(0);
+		setBackgroundColorOptionsIndex(0);
+		setContentWidthOptionsIndex(0);
+		resetHandler();
+	};
+	const onModalClose = () => setIsOpen(false);
+	const formRef = useRef(null) as RefObject<HTMLDivElement>;
+	useEffect(() => {
+		const handleEscapePress = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') isOpen && onModalClose();
+		};
+		const handleOutSidePress = (event: MouseEvent) => {
+			if (
+				!formRef.current?.contains(event?.target as Node) &&
+				isOpen &&
+				!isDropDownOpen
+			)
+				onModalClose();
+			setIsDropdownOpen(false);
+		};
+		document.addEventListener(
+			'click',
+			handleOutSidePress as unknown as EventListener
+		);
+		document.addEventListener('keydown', handleEscapePress);
+		const updatedSettings = {
+			fontSizeOptionsIndex: fontSizeOptionsIndex,
+			fontFamilyOptionsIndex: fontFamilyOptionsIndex,
+			fontColorOptionsIndex: fontColorOptionsIndex,
+			backgroundColorOptionsIndex: backgroundColorOptionsIndex,
+			contentWidthOptionsIndex: contentWidthOptionsIndex,
+		};
+		const submitHandlerWithParameters = submitHandler(updatedSettings);
+		document.addEventListener('submit', submitHandlerWithParameters);
+		return () => {
+			document.removeEventListener('keydown', handleEscapePress);
+			document.removeEventListener(
+				'click',
+				handleOutSidePress as unknown as EventListener
+			);
+			document.removeEventListener('submit', submitHandlerWithParameters);
+		};
+	});
 	return (
-		<div onClick={clickOutside}>
+		<div ref={formRef}>
 			<ArrowButton isOpen={isOpen} onClick={toggleIsOpen} />
-			<aside className={clsx([styles.container, isOpen && styles.containerOpen])}>
+			<aside
+				className={clsx([styles.container, isOpen && styles.containerOpen])}>
 				<form className={styles.form}>
+					<Text weight={800} size={31} align='center' uppercase>
+						Задайте параметры
+					</Text>
+					<Select
+						options={options.fontFamilyOptions}
+						selected={options.fontFamilyOptions[fontFamilyOptionsIndex]}
+						onChange={handleFontFamilyOptionsChange}
+						title={'Шрифт'}
+					/>
+					<RadioGroup
+						name={'Размер шрифта'}
+						options={options.fontSizeOptions}
+						selected={options.fontSizeOptions[fontSizeOptionsIndex]}
+						onChange={handleFontSizeOptionsIndexChange}
+						title={'Размер шрифта'}></RadioGroup>
+					<Select
+						options={options.fontColors}
+						selected={options.fontColors[fontColorOptionsIndex]}
+						onChange={handFontColorOptionsIndexChange}
+						title={'Цвет шрифта'}
+					/>
+					<Separator />
+					<Select
+						options={options.fontColors}
+						selected={options.backgroundColors[backgroundColorOptionsIndex]}
+						onChange={handleBackgroundColorOptionsChange}
+						title={'Цвет фона'}
+					/>
+					<Select
+						options={options.contentWidthArr}
+						selected={options.contentWidthArr[contentWidthOptionsIndex]}
+						onChange={handleContentWidthOptionsIndex}
+						title={'Ширина контента'}
+					/>
 					<div className={styles.bottomContainer}>
-						<Button title='Сбросить' htmlType='reset' type='clear' />
+						<Button
+							title='Сбросить'
+							htmlType='reset'
+							type='clear'
+							onClick={resentIndexesHandler}
+						/>
 						<Button title='Применить' htmlType='submit' type='apply' />
 					</div>
 				</form>

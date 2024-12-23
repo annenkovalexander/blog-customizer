@@ -1,7 +1,15 @@
-import { MouseEventHandler } from "react";
+export type ArticleOptionsIndexType = {
+	fontSizeOptionsIndex: number;
+	fontFamilyOptionsIndex: number;
+	fontColorOptionsIndex: number;
+	backgroundColorOptionsIndex: number;
+	contentWidthOptionsIndex: number;
+};
 
 export type ArcticleParamsFormType = {
-	isOpen: boolean;
-	toggleIsOpen: () => void;
-	clickOutside: MouseEventHandler<HTMLDivElement>;
-}
+	submitHandler: (
+		values: ArticleOptionsIndexType
+	) => (event: SubmitEvent) => void;
+	resetHandler: () => void;
+	initialState: ArticleOptionsIndexType;
+};
