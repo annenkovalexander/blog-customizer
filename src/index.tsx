@@ -53,6 +53,7 @@ const App = () => {
 		changeArticleCustomSettings(defaultArticleState);
 	};
 
+	
 	return (
 		<main
 			className={clsx(styles.main)}
