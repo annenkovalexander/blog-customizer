@@ -1,3 +1,5 @@
+import { FormEvent, FormEventHandler } from "react";
+
 export type ArticleOptionsIndexType = {
 	fontSizeOptionsIndex: number;
 	fontFamilyOptionsIndex: number;
@@ -9,7 +11,7 @@ export type ArticleOptionsIndexType = {
 export type ArcticleParamsFormType = {
 	submitHandler: (
 		values: ArticleOptionsIndexType
-	) => (event: SubmitEvent) => void;
+	) => (event: FormEvent) => void;
 	resetHandler: () => void;
 	initialState: ArticleOptionsIndexType;
 };

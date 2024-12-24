@@ -4,7 +4,7 @@ import { Text } from 'src/ui/text/Text';
 
 import styles from './ArticleParamsForm.module.scss';
 import clsx from 'clsx';
-import { MouseEvent, RefObject, useEffect, useRef, useState } from 'react';
+import { FormEvent, MouseEvent, RefObject, useEffect, useRef, useState } from 'react';
 import { ArcticleParamsFormType } from './types';
 import { RadioGroup } from 'src/ui/radio-group';
 import * as options from 'src/constants/articleProps';
@@ -16,7 +16,7 @@ export const ArticleParamsForm = ({
 	submitHandler,
 	resetHandler,
 }: ArcticleParamsFormType) => {
-	const [isOpen, setIsOpen] = useState(false);
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [isDropDownOpen, setIsDropdownOpen] = useState(false);
 	const [fontSizeOptionsIndex, setFontSizeOptionsIndex] = useState(
 		initialState.fontSizeOptionsIndex
@@ -75,8 +75,18 @@ export const ArticleParamsForm = ({
 		setContentWidthOptionsIndex(index);
 		setIsDropdownOpen(true);
 	};
+	const submitHandlerWithParameters = () => {
+		const updatedSettings = {
+			fontSizeOptionsIndex,
+			fontFamilyOptionsIndex,
+			fontColorOptionsIndex,
+			backgroundColorOptionsIndex,
+			contentWidthOptionsIndex
+		};
+		return submitHandler(updatedSettings);
+	}
 	const toggleIsOpen = () => {
-		setIsOpen(!isOpen);
+		setIsMenuOpen(!isMenuOpen);
 	};
 	const resentIndexesHandler = () => {
 		setFontSizeOptionsIndex(0);
@@ -86,16 +96,18 @@ export const ArticleParamsForm = ({
 		setContentWidthOptionsIndex(0);
 		resetHandler();
 	};
-	const onModalClose = () => setIsOpen(false);
+	const onModalClose = () => setIsMenuOpen(false);
 	const formRef = useRef(null) as RefObject<HTMLDivElement>;
 	useEffect(() => {
+		if (!isMenuOpen)
+			return;
 		const handleEscapePress = (event: KeyboardEvent) => {
-			if (event.key === 'Escape') isOpen && onModalClose();
+			if (event.key === 'Escape') isMenuOpen && onModalClose();
 		};
 		const handleOutSidePress = (event: MouseEvent) => {
 			if (
 				!formRef.current?.contains(event?.target as Node) &&
-				isOpen &&
+				isMenuOpen &&
 				!isDropDownOpen
 			)
 				onModalClose();
@@ -106,30 +118,26 @@ export const ArticleParamsForm = ({
 			handleOutSidePress as unknown as EventListener
 		);
 		document.addEventListener('keydown', handleEscapePress);
-		const updatedSettings = {
-			fontSizeOptionsIndex: fontSizeOptionsIndex,
-			fontFamilyOptionsIndex: fontFamilyOptionsIndex,
-			fontColorOptionsIndex: fontColorOptionsIndex,
-			backgroundColorOptionsIndex: backgroundColorOptionsIndex,
-			contentWidthOptionsIndex: contentWidthOptionsIndex,
-		};
-		const submitHandlerWithParameters = submitHandler(updatedSettings);
-		document.addEventListener('submit', submitHandlerWithParameters);
+		const submitOnEnter = (event: KeyboardEvent) => {
+			if (event.key === 'Enter')
+				submitHandlerWithParameters()(event as unknown as FormEvent);
+		}
+		document.addEventListener('keydown', submitOnEnter);
 		return () => {
 			document.removeEventListener('keydown', handleEscapePress);
+			document.removeEventListener('keydown', submitOnEnter);
 			document.removeEventListener(
 				'click',
 				handleOutSidePress as unknown as EventListener
 			);
-			document.removeEventListener('submit', submitHandlerWithParameters);
 		};
 	});
 	return (
 		<div ref={formRef}>
-			<ArrowButton isOpen={isOpen} onClick={toggleIsOpen} />
+			<ArrowButton isOpen={isMenuOpen} onClick={toggleIsOpen} />
 			<aside
-				className={clsx([styles.container, isOpen && styles.containerOpen])}>
-				<form className={styles.form}>
+				className={clsx([styles.container, isMenuOpen && styles.containerOpen])}>
+				<form className={styles.form} onSubmit={submitHandlerWithParameters()}>
 					<Text weight={800} size={31} align='center' uppercase>
 						Задайте параметры
 					</Text>
